@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+"""A bare-bones program to help you identify broken biscuits, to be used in
+conjunction with the images of CE316/CE866 experiment 4.  You should run this
+program with one or more images on the command line, and it processes each of
+them in turn.  The processing is as follows:
+
+  1. the image is read in as grey-scale
+  2. it is thresholded using a fixed value
+  3. the resulting binary image is tidied up using morphological operations
+  4. contours are found around each foreground object
+  5. each contour is processed
+  6. some text is written on the image
+
+You have two jobs to do:
+  + Improve the thresholding stage so it generates identifies individual
+    biscuits more reliably.
+
+  + Determine whether a biscuit is circular, rectangular or broken and
+    write that into the image.
+"""
+
+import sys, numpy, cv2
+
+# Set up the threshold.
+threshold = 100
+
+# The size of the mask use for open and close.
+mask_size = 9
+
+# The font we'll use to write on the image.
+font = cv2.FONT_HERSHEY_SIMPLEX
+
+# Ensure we have some images to process.
+if len (sys.argv) < 2:
+    print ("Usage: %s <biscuit-image>..." % sys.argv[0], file=sys.stderr)
+    exit (1)
+
+# Iterate over the image names given on the command line.
+for fn in sys.argv[1:]:
+    # Read in the image as monochrome and binarize it by thresholding.
+    print (fn + ":")
+    im = cv2.imread (fn, cv2.IMREAD_GRAYSCALE)
+    ret, bim = cv2.threshold (im, threshold, 255, cv2.THRESH_BINARY)
+
+    # Tidy up the binary image by deleting small regions and filling in gaps.
+    kernel = numpy.ones ((9, 9), numpy.uint8)
+    bim = cv2.morphologyEx (bim, cv2.MORPH_OPEN, kernel)
+    bim = cv2.morphologyEx (bim, cv2.MORPH_CLOSE, kernel)
+
+    # Find contours and print them out.
+    contours, _ = cv2.findContours (bim, cv2.RETR_EXTERNAL,
+                                    cv2.CHAIN_APPROX_SIMPLE)
+    for (i, c) in enumerate (contours):
+        print ("   length of contour %d: %d" % (i, len(c)))
+
+    # Look on the web for how to obtain descriptions of contours; the site
+    #   https://docs.opencv.org/master/dd/d49/tutorial_py_contour_features.html
+    # is one such place.  Calculate features that will categorize a biscuit's
+    # contour as "circular", "rectangular" or "broken" and store that in
+    # the variable "outcome".
+    outcome = "biscuit"
+
+    # Write the outcome on the image.  The third argument is the (y,x) location
+    # of where to write it.
+    cv2.putText (im, outcome, (10, 45), font, 1, 0, 2, cv2.LINE_AA)
+
+    # Draw the contours on the image and display the result.
+    cv2.drawContours (im, contours, -1, 0, 2)
+    cv2.imshow (fn, im)
+    cv2.waitKey (0)
+cv2.destroyAllWindows ()
