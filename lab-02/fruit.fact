@@ -1,0 +1,104 @@
+#------------------------------------------------------------------------------
+# fruit.fact -- tests for CE316 experiment on classifying fruit images
+#------------------------------------------------------------------------------
+
+name      fruit
+type      label
+author    alien@essex.ac.uk  Adrian F. Clark
+version   0.00
+tests     80
+purpose   This script tests the ability to distinguish several classes of \
+          object -- green apple, red apple, orange, grapefruit, pear, \
+	  banana, tomato.
+
+test ass1-001 gapple-01.png gapple
+test ass1-002 gapple-02.png gapple
+test ass1-003 gapple-03.png gapple
+test ass1-004 gapple-04.png gapple
+test ass1-005 gapple-05.png gapple
+test ass1-006 gapple-06.png gapple
+test ass1-007 gapple-07.png gapple
+test ass1-008 gapple-08.png gapple
+test ass1-009 gapple-09.png gapple
+test ass1-010 gapple-10.png gapple
+
+test ass1-011 rapple-01.png rapple
+test ass1-012 rapple-02.png rapple
+test ass1-013 rapple-03.png rapple
+test ass1-014 rapple-04.png rapple
+test ass1-015 rapple-05.png rapple
+test ass1-016 rapple-06.png rapple
+test ass1-017 rapple-07.png rapple
+test ass1-018 rapple-08.png rapple
+test ass1-019 rapple-09.png rapple
+test ass1-020 rapple-10.png rapple
+
+test ass1-021 orange-01.png orange
+test ass1-022 orange-02.png orange
+test ass1-023 orange-03.png orange
+test ass1-024 orange-04.png orange
+test ass1-025 orange-05.png orange
+test ass1-026 orange-06.png orange
+test ass1-027 orange-07.png orange
+test ass1-028 orange-08.png orange
+test ass1-029 orange-09.png orange
+test ass1-030 orange-10.png orange
+
+test ass1-031 gfruit-01.png gfruit
+test ass1-032 gfruit-02.png gfruit
+test ass1-033 gfruit-03.png gfruit
+test ass1-034 gfruit-04.png gfruit
+test ass1-035 gfruit-05.png gfruit
+test ass1-036 gfruit-06.png gfruit
+test ass1-037 gfruit-07.png gfruit
+test ass1-038 gfruit-08.png gfruit
+test ass1-039 gfruit-09.png gfruit
+test ass1-040 gfruit-10.png gfruit
+
+test ass1-041 chili-01.png chili
+test ass1-042 chili-02.png chili
+test ass1-043 chili-03.png chili
+test ass1-044 chili-04.png chili
+test ass1-045 chili-05.png chili
+test ass1-046 chili-06.png chili
+test ass1-047 chili-07.png chili
+test ass1-048 chili-08.png chili
+test ass1-049 chili-09.png chili
+test ass1-050 chili-10.png chili
+
+test ass1-051 pear-01.png pear
+test ass1-052 pear-02.png pear
+test ass1-053 pear-03.png pear
+test ass1-054 pear-04.png pear
+test ass1-055 pear-05.png pear
+test ass1-056 pear-06.png pear
+test ass1-057 pear-07.png pear
+test ass1-058 pear-08.png pear
+test ass1-059 pear-09.png pear
+test ass1-060 pear-10.png pear
+
+test ass1-061 banana-01.png banana
+test ass1-062 banana-02.png banana
+test ass1-063 banana-03.png banana
+test ass1-064 banana-04.png banana
+test ass1-065 banana-05.png banana
+test ass1-066 banana-06.png banana
+test ass1-067 banana-07.png banana
+test ass1-068 banana-08.png banana
+test ass1-069 banana-09.png banana
+test ass1-070 banana-10.png banana
+
+test ass1-071 tomato-01.png tomato
+test ass1-072 tomato-02.png tomato
+test ass1-073 tomato-03.png tomato
+test ass1-074 tomato-04.png tomato
+test ass1-075 tomato-05.png tomato
+test ass1-076 tomato-06.png tomato
+test ass1-077 tomato-07.png tomato
+test ass1-078 tomato-08.png tomato
+test ass1-079 tomato-09.png tomato
+test ass1-080 tomato-10.png tomato
+
+#------------------------------------------------------------------------------
+# End of fruit.fact
+#------------------------------------------------------------------------------
