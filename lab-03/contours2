@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+''' contours2 -- count the objects in an image
+'''
+import sys, cv2
+
+# Read command-line arguments.
+if len (sys.argv) < 3:
+    print ("Usage:", sys.argv[0], "<image> <threshold>", file=sys.stderr)
+    sys.exit (1)
+img = cv2.imread (sys.argv[1])
+t = int (sys.argv[2])
+
+# Form binary image.
+gray = cv2.cvtColor (img, cv2.COLOR_BGR2GRAY)
+blur = cv2.GaussianBlur (gray, (5, 5), 0)
+t, binary = cv2.threshold (blur, t, 255, cv2.THRESH_BINARY)
+
+# Find contours.
+(_, contours, _) = cv2.findContours (binary, cv2.RETR_EXTERNAL,
+                                cv2.CHAIN_APPROX_SIMPLE)
+
+# print table of contours and sizes
+print ("Found %d objects." % len(contours))
+for (i, c) in enumerate(contours):
+    print ("\tSize of contour %d: %d" % (i, len(c)))
+
+# Find internal contours too.
+contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, 
+                                       cv2.CHAIN_APPROX_SIMPLE)
+
+# Count the number of pips on the dice faces.
+# Iterate through hierarchy[0], first to find the indices of dice
+# contours, then again to find pip contours.
+
+dice = []   # list of dice contours
+pips = []   # list of pip contours
+
+# Find dice contours.
+for (i, c) in enumerate(hierarchy[0]):
+    if c[3] == -1:
+        dice.append(i)
+    
+# Find pip contours.
+for (i, c) in enumerate(hierarchy[0]):
+    if c[3] in dice:
+        pips.append(i)
+        
+print ("Total die roll:", len(pips))
+
+# Draw contours over original image.
+cv2.drawContours (img, contours, -1, (0, 0, 255), 5)
+cv2.namedWindow (sys.argv[0], cv2.WINDOW_NORMAL)
+ny, nx, nc = img.shape
+cv2.resizeWindow (sys.argv[0], nx//2, ny//2)
+cv2.imshow (sys.argv[0], img)
+cv2.waitKey (0)

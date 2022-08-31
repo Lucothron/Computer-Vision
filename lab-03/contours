@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"contours -- demo of OpenCV's contour-processing capabilities"
+import sys, cv2, numpy
+
+# Set-up.
+thresholding = "vanilla"
+#thresholding = "adaptive"
+#thresholding = "otsu"
+
+contouring = "vanilla"
+contouring = "tree"
+
+# Handle the command line.
+if len (sys.argv) < 3:
+    print ("Usage:", sys.argv[0], "<image> <threshold>", file=sys.stderr)
+    sys.exit (1)
+im = cv2.imread (sys.argv[1])
+t = int (sys.argv[2])
+
+# Convert to greyscale and reduce noise a little.
+grey = cv2.cvtColor (im, cv2.COLOR_BGR2GRAY)
+blur = cv2.GaussianBlur (grey, (5, 5), 0)
+
+# Threshold the image.
+if thresholding == "adaptive":
+    binary = cv2.adaptiveThreshold (blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+                                    cv2.THRESH_BINARY, 11, 2)
+elif thresholding =="otsu":
+    t, binary = cv2.threshold (blur, 0, 255, cv2.THRESH_BINARY
+                                    + cv2.THRESH_OTSU)
+    print ("Otsu threshold is", t)
+else:
+    t, binary = cv2.threshold (blur, t, 255, cv2.THRESH_BINARY)
+
+# Remove small features in the binary image using a morphological close.
+kernel = numpy.ones ((9,9), numpy.uint8)
+binary = cv2.erode (binary, kernel, iterations=1)
+
+# Find contours.
+if contouring == "tree":
+    # Find internal and external contours.
+    contours, hierarchy = cv2.findContours (binary, cv2.RETR_TREE,
+                                            cv2.CHAIN_APPROX_SIMPLE)
+
+    # Count the number of spots on the dice faces.  We do this by iterating
+    # through hierarchy[0], first to find the indices of dice contours,
+    # then a second time to find spot contours.
+    dice = []   # list of dice contours
+    spots = []   # list of spot contours
+    things = []   # list of things contours
+
+    # Find dice contours, drawing the contours as we process them.
+    for (i, c) in enumerate(hierarchy[0]):
+        if c[3] == -1:
+            dice.append (i)
+            cv2.drawContours (im, contours, i, (0, 0, 255), 5)
+
+    # Find spot contours, drawing them as we process them.
+    for (i, c) in enumerate(hierarchy[0]):
+        if c[3] in dice:
+            spots.append (i)
+            cv2.drawContours (im, contours, i, (0, 255, 0), 5)
+
+    # Find additional contours, drawing them as we process them.
+    for (i, c) in enumerate(hierarchy[0]):
+        if c[3] in spots:
+            things.append (i)
+            cv2.drawContours (im, contours, i, (255, 0, 0), 5)
+
+    # Report the total number of spots found.
+    ny, nx, nc = im.shape
+    cv2.putText(im, "%d" % len (spots), (nx-200, ny-100),
+                cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255), 2, cv2.LINE_AA)
+    print ("Dice roll total:", len (spots))
+
+else:
+    # Find external contours only.
+    contours, junk = cv2.findContours (binary, cv2.RETR_EXTERNAL, 
+                                       cv2.CHAIN_APPROX_SIMPLE)
+
+    # Draw contours over original image.
+    cv2.drawContours (im, contours, -1, (0, 0, 255), 5)
+
+    # Print a table of the contours and their sizes.
+    print ("Found %d objects." % len(contours))
+    for (i, c) in enumerate(contours):
+        print ("\tSize of contour %d: %d" % (i, len(c)))
+
+# Display the result.
+cv2.namedWindow (sys.argv[0], cv2.WINDOW_NORMAL)
+ny, nx, nc = im.shape
+cv2.resizeWindow (sys.argv[0], nx//2, ny//2)
+cv2.imshow (sys.argv[0], im)
+cv2.waitKey (0)
