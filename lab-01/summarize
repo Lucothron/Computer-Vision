@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""summarize -- output some useful statistics of an image and plot its
+histogram"""
+#-------------------------------------------------------------------------------
+# Boilerplate.
+#-------------------------------------------------------------------------------
+from __future__ import division
+import cv2, sys, numpy, math
+
+# Configuration.
+MAXGREY = 256
+
+#-------------------------------------------------------------------------------
+# Routines.
+#-------------------------------------------------------------------------------
+def statistics (im, indent="  "):
+    "Output statistical values that describe an image."
+    # Calculate the statistics.
+    min = im.min ()
+    max = im.max ()
+    ave = im.mean ()
+    sd  = im.std ()
+    
+    # Form and return the message.
+    text = ""
+    text += "%sMinimum: %.2f\n" % (indent, min)
+    text += "%sMaximum: %.2f\n" % (indent, max)
+    text += "%sMean:    %.2f\n" % (indent, ave)
+    text += "%sS.D.:    %.2f\n" % (indent, sd)
+    return text
+
+def histogram (im, fn, chan):
+    "Determine the histogram of an image -- simple version."
+    global MAXGREY
+
+    # We shall fill the array hist with the histogram.
+    hist = numpy.zeros (MAXGREY)
+
+    # Get the image sizes.
+    sizes = im.shape
+    if len (sizes) == 2:
+        # it's monochrome
+        ny = sizes (0)
+        nx = sizes (1)
+        nc = 1
+    else:
+        # it has several channels
+        ny, nx, nc = sizes
+    
+    # Work through the image, accumulating the histogram.
+    for y in range (0, ny):
+        for x in range (0, nx):
+            v = int (im[y,x,chan])
+            hist[v] += 1
+            #for c in range (0, nc):
+                #v = math.ceil(MAXGREY * (((im[y,x,c]) - im.min()) / (im.max() - im.min())))
+                #v = int (im[y,x,c])
+                #hist[v] += 1
+
+    # Output the histogram values to a file.
+    with open (fn, "w") as f:
+        for i in range (0, MAXGREY):
+            print (i, hist[i], file=f)
+
+
+#-------------------------------------------------------------------------------
+# Main program.
+#-------------------------------------------------------------------------------
+# We want to be invoked with some arguments on the command line.
+if len (sys.argv) < 2:
+    print ("Usage:", sys.argv[0], "<image>...", file=sys.stderr)
+    sys.exit (1)
+
+# Process each file on the command line in turn.
+for fn in sys.argv[1:]:
+    im = cv2.imread (fn)
+
+    # Output its statistics.
+    print (fn + ":")
+    print (statistics (im))
+
+    # Calculate and output the histogram data.
+    fn1 = fn[:2] + "c0" + fn[3:]
+    histogram (im, fn1 + ".dat", 0)
+    fn2 = fn[:2] + "c1" + fn[3:]
+    histogram (im, fn2 + ".dat", 1)
+    fn3 = fn[:2] + "c2" + fn[3:]
+    histogram (im, fn3 + ".dat", 2)
+
+#-------------------------------------------------------------------------------
+# End of summarize.
+#-------------------------------------------------------------------------------
