@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""Face Detection using OpenCV.  Based on sample code from:
+  http://blog.jozilla.net/2008/06/27/fun-with-python-opencv-and-face-detection/
+  updated by Alien to work with OpenCV 3.0 and its python bindings."""
+import argparse, cv2, os, sys
+
+
+def load_cascade (fn):
+    "Load a Haar cascade from a file if it exists."
+
+    for dir in [".",                                     # this directory
+                "/usr/share/opencv/haarcascades",        # Ubuntu Linux
+                "/opt/local/share/OpenCV/haarcascades",  # MacOS+MacPorts
+                ]:
+        full_fn = os.path.join (dir, fn)
+        if os.path.exists (full_fn):
+            return cv2.CascadeClassifier (full_fn)
+
+    # We couldn't find the cascade file, so tell the user.
+    print ("No such file:", fn, file=sys.stderr)
+    return None
+
+
+def detect (im, face_cascade, eye_cascade, do_value, delay=100):
+    "Detect a face using Haar cascades, as in Viola-Jones, and the eyes within."
+
+    # Create a grey-scale version of the image if necessary, either directly or
+    # using the value channel of an HSV version; Inas Al-Taie says the latter
+    # is better.
+    dims = im.shape
+    if len (dims) > 2:
+        if do_value:
+            hsv = cv2.cvtColor (im, cv2.COLOR_BGR2HSV)
+            junk, junk, grey = cv2.split (hsv)
+        else:
+            grey = cv2.cvtColor (im, cv2.COLOR_BGR2GRAY)
+    else:
+        grey = im
+    faces = face_cascade.detectMultiScale (grey, scaleFactor=1.1, minNeighbors=2)
+
+    # Locate the faces and draw the surrounding rectangles on the images.
+    # Do the same with the eyes.
+    for (x, y, w, h) in faces:
+        print ("  face at", x ,y, x+w, y+h)
+        cv2.rectangle (im, (x,y), (x+w,y+h), (255,0,0), 2)
+        roi_grey = grey[y:y+h, x:x+w]
+        roi_color =  im[y:y+h, x:x+w]
+        if eye_cascade is not None:
+            eyes = eye_cascade.detectMultiScale (roi_grey)
+            for (ex, ey, ew, eh) in eyes:
+                print ("    eye at", ex, ey, ex+ew, ey+eh)
+                cv2.rectangle (roi_color, (ex,ey), (ex+ew,ey+eh), (0,255,0), 2)
+
+    # Display the result, quitting if the user types "q" or <esc>.
+    cv2.imshow (sys.argv[0], im)
+    k = cv2.waitKey (delay)
+    if k == 27 or k == ord ("q") or k == ord ("Q"): exit (0)
+
+#-------------------------------------------------------------------------------
+# Main program.
+#-------------------------------------------------------------------------------
+# Process the command line.
+parser = argparse.ArgumentParser ()
+parser.add_argument ("-v", default=False, action="store_true",
+                     help="use the HSV value channel instead of grey-scale")
+parser.add_argument ("images", nargs="*", default="")
+args = parser.parse_args()
+
+# Ensure we have a list of filenames.
+if isinstance (args.images, str):
+    args.images = [args.images]
+
+# Load the cascades that we shall use for finding faces and eyes. 
+face_cascade = load_cascade ("haarcascade_frontalface_alt.xml")
+eye_cascade = load_cascade ("haarcascade_lefteye_2splits.xml")
+
+# If filenames were supplied, we process them; if not, we use live video.
+if len (args.images) < 1 or args.images[0] == "":
+    print ("Using video")
+    video_capture = cv2.VideoCapture (0)
+    while video_capture.isOpened ():
+        ret, im = video_capture.read ()
+        # cv2.imwrite ("oneface.jpg", im)
+        detect (im, face_cascade, eye_cascade, args.v)
+
+else:
+    for imfn in args.images:
+        if len (args.images) > 1: print (imfn + ":")
+        im = cv2.imread (imfn)
+        detect (im, face_cascade, eye_cascade, args.v)
+        if len (args.images) > 1:
+            cv2.waitKey (20)
+        else:
+            cv2.waitKey (0)
+    cv2.destroyAllWindows ()
+
+#-------------------------------------------------------------------------------
+# End of face-detect.py
+#-------------------------------------------------------------------------------
